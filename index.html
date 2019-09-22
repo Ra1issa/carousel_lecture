@@ -444,7 +444,7 @@ pre[class*="language-"].line-numbers > code {
     <h1 id="carouselsasanexampleofstaticcostanalysis">Carousels as an example of Static Cost Analysis</h1>
 <p>These notes cover an example of defining and analyzing abstract metrics over <a href="https://multiparty.org/jiff/docs/jsdoc/">jiff</a>, a generic Javascript framework for MultiParty Computation (MPC).</p>
 <p><em>Relevant libraries: <a href="https://multiparty.org/jiff/docs/jsdoc/">jiff</a>, <a href="https://babeljs.io/">Babel</a>, <a href="https://github.com/lapets/polynomium/">polynomium</a>, <a href="https://github.com/lapets/imparse">imparse</a>, <a href="https://plot.ly/javascript/">plotly</a></em></p>
-<h1 id="motivation">Motivation</h1>
+<h3 id="motivation">Motivation</h3>
 <p>It is often critical in practice to automatically give upper bounds and estimates on resource usage of programs before reaching production in their lifeline.
 Several such scenarios include:
     * Safety critical applications where we may need to catch vulnerabilities and side channels before deployment.
@@ -455,7 +455,7 @@ Several such scenarios include:
 <p>This problem is somewhat juxtaposed to the problem of giving asymptotic bounds of <em>whatever metric you pick</em> of algorithms because of the essentialness of giving representative constants:
     While in an algorithms course you may be told that binary search in the worst case takes O(1) space complexity, we will actually care about the hidden constant that is slipped in the Big Oh notation. That will make the difference between saying that our program will use 10 GB or 10 MB in memory.</p>
 <p>While it may generally be undecidable to perform resource estimates of generic programs, we may restrict our focus on subsets of languages for which the problem becomes solvable. Fortunately, these restrictions do not completely deter our programs expressiveness and may still form meaningful estimates for codes that programmers typically develop.</p>
-<h1 id="problemdefinition">Problem Definition</h1>
+<h3 id="problemdefinition">Problem Definition</h3>
 <p>In our specific example, we will be looking at the problem of estimating relevant metrics for MPC <em>(a subfield of cryptography that deals with distributive protocols for computing functions over secret data among multiple parties)</em>:</p>
 <pre><code>* The numbers of rounds of communication an MPC protocol takes
 * The number of total messages sent between parties
@@ -466,7 +466,7 @@ Several such scenarios include:
 3. Traversing the AST and deriving our metric. We do so by exposing Babel's visitor patterns and cumulitavely constructing the metric accordingly.
 4. Plotting our findings for visiualizing and interpreting the results.
 </code></pre>
-<h2 id="quickwordonbabel">Quick word on Babel</h2>
+<h3 id="quickwordonbabel">Quick word on Babel</h3>
 <p>Babel is a Javascript compiler that is used to convert new JS syntax and features (e.g. ES6+) into backward compatible JS supported by older enviornements. <em>In practice, you may often use javascript features that will not be supported by your clients browsers (e.g. Internet Explorer) and would need such a tool.</em> Babel's compilation process happens in 3 steps:</p>
 <ol>
 <li>Generate an AST by parsing the JS code</li>
@@ -475,7 +475,7 @@ Several such scenarios include:
 </ol>
 <p>You can test it out and play around with a dummy example over <a href="https://babeljs.io/repl/#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=NoRgNABATJDMC6A6AtgQwA4ApMDsCUEAvAHwQ4QDUEIeAUEA&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&timeTravel=false&sourceType=module&lineWrap=true&presets=es2015%2Creact%2Cstage-2&prettier=false&targets=&version=7.6.0&externalPlugins=">here</a>.</p>
 <p>We will specifically be using Babel's plugins. These plugins are executed in the 2nd compilation step and allow for custom or predefined transformations of the AST. Without any plugins, Babel will not modify the AST. We will register a "metric" plugin that will inject a "metric" parameter in each node of the AST, then define how to construct this metric in the visitor patterns.</p>
-<h2 id="definingcostsemanticsforcarousels">Defining Cost Semantics for Carousels</h2>
+<h1 id="">#</h1>
 <pre><code class="neptune[title=Party&nbsp1] language-neptune[title=Party&nbsp1]">var jiff_instance;
 
 function connect() {

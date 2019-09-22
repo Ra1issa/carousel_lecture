@@ -4,7 +4,7 @@
 
 *Relevant libraries: [jiff](https://multiparty.org/jiff/docs/jsdoc/), [Babel](https://babeljs.io/), [polynomium](https://github.com/lapets/polynomium/), [imparse](https://github.com/lapets/imparse), [plotly](https://plot.ly/javascript/)*
 
-# Motivation
+### Motivation
 
   It is often critical in practice to automatically give upper bounds and estimates on resource usage of programs before reaching production in their lifeline.
 Several such scenarios include:
@@ -19,7 +19,7 @@ Several such scenarios include:
 
   While it may generally be undecidable to perform resource estimates of generic programs, we may restrict our focus on subsets of languages for which the problem becomes solvable. Fortunately, these restrictions do not completely deter our programs expressiveness and may still form meaningful estimates for codes that programmers typically develop.
 
-# Problem Definition
+### Problem Definition
 
   In our specific example, we will be looking at the problem of estimating relevant metrics for MPC *(a subfield of cryptography that deals with distributive protocols for computing functions over secret data among multiple parties)*:
 
@@ -34,7 +34,7 @@ Several such scenarios include:
     4. Plotting our findings for visiualizing and interpreting the results.
 
 
-## Quick word on Babel
+### Quick word on Babel
 
 Babel is a Javascript compiler that is used to convert new JS syntax and features (e.g. ES6+) into backward compatible JS supported by older enviornements. *In practice, you may often use javascript features that will not be supported by your clients browsers (e.g. Internet Explorer) and would need such a tool.* Babel's compilation process happens in 3 steps:
 
@@ -49,7 +49,7 @@ We will specifically be using Babel's plugins. These plugins are executed in the
 
 
 
-## Defining Cost Semantics for Carousels
+##
 
 ```neptune[title=Party&nbsp1]
 var jiff_instance;
