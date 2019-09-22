@@ -1,0 +1,3 @@
+[submodule "neptune-notebook.js"]
+	path = neptune-notebook.js
+	url = https://github.com/KinanBab/neptune-notebook.js.git
