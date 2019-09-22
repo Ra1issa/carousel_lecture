@@ -475,11 +475,7 @@ Several such scenarios include:
 </ol>
 <p>You can test it out and play around with a dummy example over <a href="https://babeljs.io/repl/#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=NoRgNABATJDMC6A6AtgQwA4ApMDsCUEAvAHwQ4QDUEIeAUEA&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&timeTravel=false&sourceType=module&lineWrap=true&presets=es2015%2Creact%2Cstage-2&prettier=false&targets=&version=7.6.0&externalPlugins=">here</a>.</p>
 <p>We will specifically be using Babel's plugins. These plugins are executed in the 2nd compilation step and allow for custom or predefined transformations of the AST. Without any plugins, Babel will not modify the AST. We will register a "metric" plugin that will inject a "metric" parameter in each node of the AST, then define how to construct this metric in the visitor patterns.</p>
-<p>In the file <code>client.js</code>, we start by connecting to the server. First, we define the <code>hostname</code> that the server above is
-running on. Second, since this is a multi-party computation, we need to tell the server how many parties there are
-(<code>party_count</code>), and the name of our computation(<code>computation_id</code>).</p>
-<p>The <code>make_jiff</code> function uses this information to set up a new JIFF object.
-We save the fully configured <code>jiff_instance</code> in a global variable, so we can use it when we compute our function.</p>
+<h2 id="definingcostsemanticsforcarousels">Defining Cost Semantics for Carousels</h2>
 <pre><code class="neptune[title=Party&nbsp1] language-neptune[title=Party&nbsp1]">var jiff_instance;
 
 function connect() {
@@ -498,103 +494,6 @@ function connect() {
   jiff_instance = jiff.make_jiff(hostname, computation_id, options);
 }
 </code></pre>
-<h2 id="computingthestandarddeviation">Computing the standard deviation</h2>
-<p>Say there are <em>n</em> parties in your computation, each with input <em>x<em>i</em>. Let <em>m</em> be the mean of the inputs <em>x</em>i</em>. Recall
-that the (population) variance of a series of values is defined to be the sum between <em>i=1</em> and <em>n</em> of
-<em>(1/n)(x_i - m)^2</em>. The standard deviation is then the square root of the variance.</p>
-<p>We could choose to compute this expression directly under MPC by secret-sharing the <em>x_i</em> values, subtracting the mean
-from them, and squaring this and then summing, normalizing by <em>n</em>, and taking the square root, all under MPC. However,
-this will be both messy to write and inefficient: any multiplication done under MPC is time-intensive, and here there
-are many.</p>
-<p>There are a few things we can do to cut down on the computational overhead. First, note that the variance is really what
-needs to be computed under MPC: the value of <em>n</em> is public so we can derive the standard deviation from the variance
-publicly without incurring any additional privacy loss.</p>
-<p>Secondly, one can recall that there is an alternate formulation of the variance, which is</p>
-<p><em>E[X]^2 - E[X^2],</em></p>
-<p>where <em>E</em> denotes the expected value, i.e. variance is equal to the difference between the square of the
-mean of the input values and the mean of the input values squared.</p>
-<p>We can make this slightly faster by moving some of the normalization to post-processing, i.e. writing variance as</p>
-<p><em>(1/n)[(sum over X)^2/n - (sum over X^2)].</em></p>
-<p>Thus, variance can be calculated by each user
-locally computing the square of their value, then secret sharing both their value and their value squared to compute the
-means of both. Since <em>n</em> is a constant, the multiplication by <em>1/n</em> to compute the means is computationally inexpensive,
-there is only one single secure multiplication that must take place, when <em>E[X]</em> is squared.</p>
-<p>In code, here is an outline of what we will do given each party's arbitrary input value <em>x_i</em> and number of parties <em>n</em>.</p>
-<pre><code class="javascript language-javascript">function compute() {
-  var x_i; //input: will be passed into computation in final version
-  var n;   //number of parties: will be passed into computation in final version
-
-  // calculate x_i^2
-  ...
-  // share x_i and x_i^2
-  ...
-  // secretly compute sum of x_i's
-  ...
-  // secretly compute sum of x_i^2's
-  ...
-  // square the sum of x^i's
-  ...
-  // normalize the square of the sum of x_i's
-  ...
-  // subtract the sum of x_i^2's from this
-  ...
-  // open the results
-  ...
-  // normalize the result
-  ...
-  // Take the square root of this
-  ...
-  // print this final result
-  ...
-}
-</code></pre>
-<p>The first step is to share our input and our input squared with the rest of the parties. We use our saved and configured
- <code>jiff_instance</code> to do so. This operation is asynchronous: it requires communicating with every party to secret share
- the data. It returns a promise.</p>
-<p>The sharing function is passed the input. In this case, all party inputs are length one, and they're all providing the
-same type of input. These items are customizable, but in this case the basic implementation is sufficient.</p>
-<pre><code class="javascript language-javascript"> var shares = jiff_instance.share(input);
- var in_squared = jiff_instance.share(input**2);
-</code></pre>
-<p>However, since the input squared might have more decimal points than the original input and we are restricted to some
-fixed number of decimal points depending on our settings, the <code>in_squared</code> variable first needs to have input**2
-truncated to that number of decimal points. Say we want to truncate to 2 decimal points. Then,</p>
-<pre><code class="javascript language-javascript">var in_squared_fixed = Number.parseFloat((Math.pow(input, 2)).toFixed(2)); //convert input^2 to fixed point number
-var in_squared = jiff_instance.share(in_squared_fixed);
-</code></pre>
-<p>Once everyone's input is shared, we'll compute their sums. The promises that <code>shares</code> and <code>in_squared</code> return are
-objects containing the shares from every party in an object. They have the form</p>
-<pre><code>{1 : [&lt;party 1's array&gt;], 2 : [&lt;party 2's array&gt;], n: [&lt;party n's array&gt;]}
-</code></pre>
-<p>To sum the secret-shares, we use the secret addition function, <code>sadd</code></p>
-<pre><code class="javascript language-javascript">var in_sum = shares[1];
-var in_squared_sum = in_squared[1];
-
-for (var i = 2; i &lt;= jiff_instance.party_count; i++) {    // sum all inputs and sum all inputs squared
-      in_sum = in_sum.sadd(shares[i]);
-      in_squared_sum = in_squared_sum.sadd(in_squared[i]);
-    }
-</code></pre>
-<p>Next, we need to normalize the sum of the inputs. Since <em>1/n</em> may as a floating point number have more values after the
-decimal than our settings can handle, we first truncate this to a fixed amount and then do a secret multiplication by this.</p>
-<pre><code class="javascript language-javascript"> var one_over_n = Number.parseFloat((1/jiff_instance.party_count).toFixed(2)); // convert 1/n to fixed point number
- var in_sum_squared = in_sum.smult(in_sum);
- var intermediary = in_sum_squared.cmult(one_over_n);
-</code></pre>
-<p>We can then compute the difference between this and the sum of inputs squared.</p>
-<pre><code class="javascript language-javascript">var out = in_squared_sum.ssub(intermediary);
-</code></pre>
-<p>Finally, we need to reveal the results to each party. We use a promise to resolve the results
-from all parties, then do the final post-processing on this reveal.</p>
-<pre><code class="javascript language-javascript">//Create a promise of output
-var promise = jiff_instance.open(out);
-
-var promise2 = promise.then(function (v) {
-  var variance = v/(jiff_instance.party_count - 1);
-  return Math.sqrt(variance);       // Return standard deviation.
-});
-</code></pre>
-<p>The <code>compute</code> function looks like this:</p>
 <pre><code class="javascript language-javascript">function compute() {
     var shares = jiff_instance.share(input);
     var in_sum = shares[1];
