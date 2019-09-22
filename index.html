@@ -463,10 +463,18 @@ Several such scenarios include:
 <p>We need to do so by never actually running the program but rather statically analyzing it. In order to do so, we will be:</p>
 <pre><code>1. First defining a formal cost semantics for MPC primitives written in jiff. These costs may later be updated depending on the enviornement in which we run our protocol *(browser, hardware, etc.)* .
 2. Parsing the code we would like to analyze according to Javascripts grammar and transforming it into an AST (abstract syntax tree). Thankfully for us, Babel will take care of tokenizing and anotating different sections of the code and will produce the necessary AST for us.
-3. Traversing the AST and constructing our metric accordingly. We do so by exposing Babel's visitor patterns and cumulitavely building the metric.
+3. Traversing the AST and deriving our metric. We do so by exposing Babel's visitor patterns and cumulitavely constructing the metric accordingly.
 4. Plotting our findings for visiualizing and interpreting the results.
 </code></pre>
 <h2 id="quickwordonbabel">Quick word on Babel</h2>
+<p>Babel is a Javascript compiler that is used to convert new JS syntax and features (e.g. ES6+) into backward compatible JS supported by older enviornements. <em>In practice, you may often use javascript features that will not be supported by your clients browsers (e.g. Internet Explorer) and would need such a tool.</em> Babel's compilation process happens in 3 steps:</p>
+<ol>
+<li>Generate an AST by parsing the JS code</li>
+<li>Transform the AST in order to transpile the code into older versions of JS</li>
+<li>Generate the resulting code from the transformed AST</li>
+</ol>
+<p>You can test it out and play around with a dummy example over <a href="https://babeljs.io/repl/#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=NoRgNABATJDMC6A6AtgQwA4ApMDsCUEAvAHwQ4QDUEIeAUEA&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&timeTravel=false&sourceType=module&lineWrap=true&presets=es2015%2Creact%2Cstage-2&prettier=false&targets=&version=7.6.0&externalPlugins=">here</a>.</p>
+<p>We will specifically be using Babel's plugins. These plugins are executed in the 2nd compilation step and allow for custom or predefined transformations of the AST. Without any plugins, Babel will not modify the AST. We will register a "metric" plugin that will inject a "metric" parameter in each node of the AST, then define how to construct this metric in the visitor patterns.</p>
 <p>In the file <code>client.js</code>, we start by connecting to the server. First, we define the <code>hostname</code> that the server above is
 running on. Second, since this is a multi-party computation, we need to tell the server how many parties there are
 (<code>party_count</code>), and the name of our computation(<code>computation_id</code>).</p>
