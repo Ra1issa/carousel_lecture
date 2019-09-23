@@ -16,12 +16,12 @@ textarea{
 }
 ```
 ```neptune[inject=true,language=HTML]
-<script src="/carousels/lib/lodash.core.min.js"></script>
-<script src="/carousels/lib/jquery-2.1.1.js"></script>
-<script src="/carousels/lib/babel.min.js"></script>
-<script src="/carousels/lib/randomColor.min.js"></script>
-<script src="/carousels/lib/plotly-latest.min.js"></script>
-<script src="/carousels/lib/polynomium.js"></script>
+<script src="/lib/lodash.core.min.js"></script>
+<script src="/lib/jquery-2.1.1.js"></script>
+<script src="/lib/babel.min.js"></script>
+<script src="/lib/randomColor.min.js"></script>
+<script src="/lib/plotly-latest.min.js"></script>
+<script src="/lib/polynomium.js"></script>
 <script src="/carousels/lib/imparse.js"></script>
 <script src="/carousels/lib/carousels.js"></script>
 <script src="/carousels/lib/costs.js"></script>
