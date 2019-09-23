@@ -1,13 +1,28 @@
+```neptune[inject=true,language=CSS]
+body{
+  padding-right: 20%;
+  padding-left: 20%;
+  font-weight: 100;
+  font-family: Calibri;
+  color:#173834;
+}
+```
+
+```neptune[inject=true,language=HTML]
+<body>
+```
+
 # Carousels as an example of Static Cost Analysis
 
   These notes cover an example of defining and analyzing abstract metrics over [jiff](https://multiparty.org/jiff/docs/jsdoc/), a generic Javascript framework for MultiParty Computation (MPC).
 
 *Relevant libraries: [jiff](https://multiparty.org/jiff/docs/jsdoc/), [Babel](https://babeljs.io/), [polynomium](https://github.com/lapets/polynomium/), [imparse](https://github.com/lapets/imparse), [plotly](https://plot.ly/javascript/)*
 
-### Motivation
+## Motivation
 
   It is often critical in practice to automatically give upper bounds and estimates on resource usage of programs before reaching production in their lifeline.
 Several such scenarios include:
+
     * Safety critical applications where we may need to catch vulnerabilities and side channels before deployment.
     * Time critical applications where we need to finish tasks in a hard deadline.
     * Memory critical applications where we may be limited by the total amount of memory our program can use.
@@ -19,7 +34,7 @@ Several such scenarios include:
 
   While it may generally be undecidable to perform resource estimates of generic programs, we may restrict our focus on subsets of languages for which the problem becomes solvable. Fortunately, these restrictions do not completely deter our programs expressiveness and may still form meaningful estimates for codes that programmers typically develop.
 
-### Problem Definition
+## Problem Definition
 
   In our specific example, we will be looking at the problem of estimating relevant metrics for MPC *(a subfield of cryptography that deals with distributive protocols for computing functions over secret data among multiple parties)*:
 
@@ -28,13 +43,15 @@ Several such scenarios include:
 
   We need to do so by never actually running the program but rather statically analyzing it. In order to do so, we will be:
 
-    1. First defining a formal cost semantics for MPC primitives written in jiff. These costs may later be updated depending on the enviornement in which we run our protocol *(browser, hardware, etc.)* .
-    2. Parsing the code we would like to analyze according to Javascripts grammar and transforming it into an AST (abstract syntax tree). Thankfully for us, Babel will take care of tokenizing and anotating different sections of the code and will produce the necessary AST for us.
+    1. First defining a formal cost semantics for MPC primitives written in jiff.
+    These costs may later be updated depending on the enviornement in which we run our protocol *(browser, hardware, etc.)* .
+    2. Parsing the code we would like to analyze according to Javascripts grammar and transforming it into an AST (abstract syntax tree).
+    Thankfully for us, Babel will take care of tokenizing and anotating different sections of the code and will produce the necessary AST for us.
     3. Traversing the AST and deriving our metric. We do so by exposing Babel's visitor patterns and cumulitavely constructing the metric accordingly.
     4. Plotting our findings for visiualizing and interpreting the results.
 
 
-### Quick word on Babel
+## Quick word on Babel
 
 Babel is a Javascript compiler that is used to convert new JS syntax and features (e.g. ES6+) into backward compatible JS supported by older enviornements. *In practice, you may often use javascript features that will not be supported by your clients browsers (e.g. Internet Explorer) and would need such a tool.* Babel's compilation process happens in 3 steps:
 
@@ -102,8 +119,3 @@ function compute() {
 
 }
 ```
-
-
-# Complete Files
-
-For complete files and running instructions, navigate to /demos/standard-deviation.
