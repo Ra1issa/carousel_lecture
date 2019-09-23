@@ -113,20 +113,38 @@ var spec_cost = {};
 var input = document.getElementById("code").value;
 document.getElementById("spec_cost").innerHTML = JSON.stringify(costs["onlineRounds"], null,'\t');
 
+
+// Turn each of the cost specification into polynomials that can be manipulated
+
 for (var op in spec){
   spec_cost[op] = carousels.parsePoly(spec[op]);
 }
+
+// Register the 'metric' plugin and specificy the method which construct the
+// metric (i.e. "createMetric").
+
 Babel.registerPlugin('metric', createMetric(spec_cost));
 
+// Apply the metric on the input code's AST
 var bbl = Babel.transform(input, {plugins: ['metric']});
+
+// Retrieve the result of the transformation
 var bbl_result = bbl.ast.program.results;
 
 document.getElementById("out").innerHTML = JSON.stringify(bbl_result, {maxLength:120}).trim();
 
+// The output of Babel returns a string. We use the polynomium library to turn
+// this string into an actual polynomial.
+
 var pol = carousels.parsePoly(bbl_result["bubblesort"]);
 console.log(pol);
 
+// Compute the polynomial over actual inputs (compute_values invoke polynomium's
+// method for evaluating polynomials on inputs)
+
 var results = compute_values([pol], 1);
+
+// Plot the results
 plot2d("onlineRounds", "bubblesort", results);
 
 ```
@@ -139,3 +157,131 @@ Plot:
 ```neptune[inject=true,language=HTML]
 <div id="myPlot"></div>
 ```
+
+
+# Looking at the Visitor Patterns
+
+Code to Analyze:
+```neptune[inject=true,language=HTML]
+<textarea id="code2" width="100%">
+function addition(){
+  var x = 1;
+  var y = 2;
+
+  return x+y;
+}
+</textarea>
+```
+What does a node in Babel's AST look like ?
+```neptune[inject=true,language=HTML]
+<textarea id="node" width="100%">
+</textarea>
+```
+
+What does the transformed Babel AST look like ?
+```neptune[inject=true,language=HTML]
+<textarea id="ast" width="100%">
+</textarea>
+```
+
+```neptune[language=javascript]
+var createMetric2 = function(spec) {
+
+  var dict = {}; // acts as a stack
+  dict["arrays"] = [];
+
+  return function () {
+    var zero = polynomium.c(0).toObject(), //create constant polynomium = 0
+        one = polynomium.c(1).toObject(), //create constant polynomium = 1
+        plus = function (sum, node) { return polynomium.add(sum, node.metric).toObject(); },
+        dot = function (mult, node) { return polynomium.mul(mult, node.metric).toObject(); }
+        ;
+
+    return carousels.babelVisitorDefaults({
+      visitor: {
+        Program: {
+          "exit": function (p) {
+
+            var results = {}, metric = {};
+            for (var i = 0; i < p.node.body.length; i++) {
+              metric[p.node.body[i].id.name] = p.node.body[i].metric;
+              results[p.node.body[i].id.name] = polynomium.toString(p.node.body[i].metric);
+            }
+            p.node.metric = metric;
+            p.node.results = results;
+            document.getElementById("ast").value = JSON.stringify(p.node, null,'\t');
+          }
+        },
+        FunctionDeclaration: {
+          "exit": function (p) {
+            p.node.metric = p.node.body.metric;
+            dict[p.node.id.name] = p.node;
+          }
+        },
+        BlockStatement: {
+          "exit": function (p) {
+            p.node.metric = p.node.body.reduce(plus, zero);
+          }
+        },
+        Identifier: {
+          "exit": function (p) {
+            p.node.metric = zero;
+          }
+        },
+        VariableDeclaration: {
+          "exit": function (p) {
+            p.node.metric = p.node.declarations.reduce(plus, zero);
+          }
+        },
+        VariableDeclarator: {
+          "exit": function (p) {
+            p.node.metric = p.node.init.metric;
+          }
+        },
+        ReturnStatement: {
+          "exit": function (p) {
+            p.node.metric = p.node.argument.metric;
+          }
+        },
+        BinaryExpression: {
+          "exit": function (p) {
+            var start = p.node.loc.start, op = p.node.operator;
+            if (op in spec) {
+              p.node.metric = [p.node.left, p.node.right].reduce(plus, spec[op]);
+            } else {
+              throw Error("Node type BinaryExpression with operator " + op +
+                          " is not handled at line " + start.line + ", column " + start.column + ".");
+            }
+            document.getElementById("node").value = JSON.stringify(p.node, null,'\t');
+          }
+        },
+        NumericLiteral: {
+          "exit": function (p) {
+            p.node.metric = zero;
+          }
+        }
+      }
+    });
+  };
+}
+
+var spec = costs["onlineRounds"];
+var spec_cost = {};
+var input = document.getElementById("code2").value;
+document.getElementById("spec_cost").innerHTML = JSON.stringify(costs["onlineRounds"], null,'\t');
+for (var op in spec){
+  spec_cost[op] = carousels.parsePoly(spec[op]);
+}
+Babel.registerPlugin('metric', createMetric2(spec_cost));
+var bbl = Babel.transform(input, {plugins: ['metric']});
+var bbl_result = bbl.ast.program.results;
+document.getElementById("out").innerHTML = JSON.stringify(bbl_result, {maxLength:120}).trim();
+var pol = carousels.parsePoly(bbl_result["addition"]);
+var results = compute_values([pol], 1);
+
+```
+
+
+# Future Work
+
+We are working on extending Carousels for other languages.
