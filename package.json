@@ -1,0 +1,26 @@
+{
+  "name": "carousel_lecture",
+  "version": "1.0.0",
+  "description": "-",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ra1issa/carousel_lecture.git"
+  },
+  "keywords": [
+    "lecture",
+    "course"
+  ],
+  "author": "Rawane Issa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ra1issa/carousel_lecture/issues"
+  },
+  "homepage": "https://github.com/Ra1issa/carousel_lecture#readme",
+  "dependencies": {
+    "neptune-notebook": "^1.0.2"
+  }
+}

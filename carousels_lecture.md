@@ -6,14 +6,28 @@ body{
   font-family: Calibri;
   color:#173834;
 }
+
+textarea{
+  width:100%;
+  height: 20%;
+  box-sizing: border-box;         /* For IE and modern versions of Chrome */
+  -moz-box-sizing: border-box;    /* For Firefox                          */
+  -webkit-box-sizing: border-box; /* For Safari        
+}
 ```
 ```neptune[inject=true,language=HTML]
-<script src="carousels/lib/imparse.js"></script>
-<script src="carousels/lib/carousels.js"></script>
-<script src="carousels/lib/costs.js"></script>
-<script src="carousels/lib/metric.js"></script>
-<script src="carousels/lib/plot.js"></script>
-<script src="carousels/lib/setup.js"></script>
+<script src="/carousels/lib/lodash.core.min.js"></script>
+<script src="/carousels/lib/jquery-2.1.1.js"></script>
+<script src="/carousels/lib/babel.min.js"></script>
+<script src="/carousels/lib/randomColor.min.js"></script>
+<script src="/carousels/lib/plotly-latest.min.js"></script>
+<script src="/carousels/lib/polynomium.js"></script>
+<script src="/carousels/lib/imparse.js"></script>
+<script src="/carousels/lib/carousels.js"></script>
+<script src="/carousels/lib/costs.js"></script>
+<script src="/carousels/lib/metric.js"></script>
+<script src="/carousels/lib/plot.js"></script>
+<script src="/carousels/lib/setup.js"></script>
 ```
 
 # Carousels as an example of Static Cost Analysis
@@ -63,6 +77,7 @@ Babel is a Javascript compiler that is used to convert new JS syntax and feature
  2. Transform the AST in order to transpile the code into older versions of JS
  3. Generate the resulting code from the transformed AST
 
+
 You can test it out and play around with a dummy example over [here](https://babeljs.io/repl/#?babili=false&browsers=&build=&builtIns=false&spec=false&loose=false&code_lz=NoRgNABATJDMC6A6AtgQwA4ApMDsCUEAvAHwQ4QDUEIeAUEA&debug=false&forceAllTransforms=false&shippedProposals=false&circleciRepo=&evaluate=false&fileSize=false&timeTravel=false&sourceType=module&lineWrap=true&presets=es2015%2Creact%2Cstage-2&prettier=false&targets=&version=7.6.0&externalPlugins=).
 
 We will specifically be using Babel's plugins. These plugins are executed in the 2nd compilation step and allow for custom or predefined transformations of the AST. Without any plugins, Babel will not modify the AST. We will register a "metric" plugin that will inject a "metric" parameter in each node of the AST, then define how to construct this metric in the visitor patterns.
@@ -70,56 +85,57 @@ We will specifically be using Babel's plugins. These plugins are executed in the
 
 
 
-##
+## A Simple version of Carousels
 
-```neptune[title=Party&nbsp1]
-var jiff_instance;
+Code to Analyze:
+```neptune[inject=true,language=HTML]
+<textarea id="code" width="100%">
+function bubblesort(x){
+  var arr = [1,2,3,4];
 
-function connect() {
+  var arr_bool = arr.map((curr,i) => arr[i].lt(arr[i+1]));
+  arr = arr.map((curr,i) => arr_bool[i].if_else(arr_bool[i-1].if_else(arr[i],arr[i-1]), arr[i+1]));
 
-  var hostname = "http://localhost:8080";
-
-  var computation_id = 'stand_dev';
-  var options = {party_count: 3};
-
-  // TODO: is this necessary if we're using npm?
-  if (node) {
-    jiff = require('../../lib/jiff-client');
-    $ = require('jquery-deferred');
-  }
-
-  jiff_instance = jiff.make_jiff(hostname, computation_id, options);
+  return arr;
 }
+</textarea>
+```
+Cost specification of Online Rounds:
+```neptune[inject=true,language=HTML]
+<textarea id="spec_cost">
+</textarea>
 ```
 
-```javascript
-function compute() {
-    var shares = jiff_instance.share(input);
-    var in_sum = shares[1];
-    var in_squared_fixed = Number.parseFloat((Math.pow(input, 2)).toFixed(2)); //convert input^2 to fixed point number
-    var in_squared = jiff_instance.share(in_squared_fixed);
-    var in_squared_sum = in_squared[1];
+```neptune[language=javascript]
 
-    for (var i = 2; i <= jiff_instance.party_count; i++) {    // sum all inputs and sum all inputs squared
-      in_sum = in_sum.sadd(shares[i]);
-      in_squared_sum = in_squared_sum.sadd(in_squared[i]);
-    }
+var spec = costs["onlineRounds"];
+var spec_cost = {};
+var input = document.getElementById("code").value;
+document.getElementById("spec_cost").innerHTML = JSON.stringify(costs["onlineRounds"], null,'\t');
 
-    var one_over_n = Number.parseFloat((1/jiff_instance.party_count).toFixed(2)); // convert 1/n to fixed point number
-    var in_sum_squared = in_sum.smult(in_sum);
-    var intermediary = in_sum_squared.cmult(one_over_n);
-    var out = in_squared_sum.ssub(intermediary);
-
-
-    //Create a promise of output
-    var promise = jiff_instance.open(out);
-
-    var promise2 = promise.then(function (v) {
-      var variance = v/(jiff_instance.party_count - 1);
-      return Math.sqrt(variance);       // Return standard deviation.
-    });
-
-    return promise2;
-
+for (var op in spec){
+  spec_cost[op] = carousels.parsePoly(spec[op]);
 }
+Babel.registerPlugin('metric', createMetric(spec_cost));
+
+var bbl = Babel.transform(input, {plugins: ['metric']});
+var bbl_result = bbl.ast.program.results;
+
+document.getElementById("out").innerHTML = JSON.stringify(bbl_result, {maxLength:120}).trim();
+
+var pol = carousels.parsePoly(bbl_result["bubblesort"]);
+console.log(pol);
+
+var results = compute_values([pol], 1);
+plot2d("onlineRounds", "bubblesort", results);
+
+```
+Result of Analysis:
+```neptune[inject=true,language=HTML]
+<textarea id="out">
+</textarea>
+```
+Plot:
+```neptune[inject=true,language=HTML]
+<div id="myPlot"></div>
 ```
