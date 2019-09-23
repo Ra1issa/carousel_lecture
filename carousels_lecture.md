@@ -7,9 +7,13 @@ body{
   color:#173834;
 }
 ```
-
 ```neptune[inject=true,language=HTML]
-<body>
+<script src="carousels/lib/imparse.js"></script>
+<script src="carousels/lib/carousels.js"></script>
+<script src="carousels/lib/costs.js"></script>
+<script src="carousels/lib/metric.js"></script>
+<script src="carousels/lib/plot.js"></script>
+<script src="carousels/lib/setup.js"></script>
 ```
 
 # Carousels as an example of Static Cost Analysis
