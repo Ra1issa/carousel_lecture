@@ -7,4 +7,4 @@ const arr = ['carousels/lib/imparse.js','carousels/lib/carousels.js','carousels/
 
 var neptune = new Neptune();
 neptune.addDocument('tutorial', __dirname + '/carousels_lecture.md', false, arr);
-neptune.writeHTML('tutorial', 'carousels_lecture.html');
+neptune.writeHTML('tutorial', 'index.html');
