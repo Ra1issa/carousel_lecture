@@ -264,14 +264,11 @@ var createMetric2 = function(spec) {
     });
   };
 }
-
 var spec = costs["onlineRounds"];
 var spec_cost = {};
 var input = document.getElementById("code2").value;
 document.getElementById("spec_cost").innerHTML = JSON.stringify(costs["onlineRounds"], null,'\t');
-for (var op in spec){
-  spec_cost[op] = carousels.parsePoly(spec[op]);
-}
+for (var op in spec){spec_cost[op] = carousels.parsePoly(spec[op]);}
 Babel.registerPlugin('metric', createMetric2(spec_cost));
 var bbl = Babel.transform(input, {plugins: ['metric']});
 var bbl_result = bbl.ast.program.results;
