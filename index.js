@@ -6,5 +6,5 @@ const arr = ['carousels/lib/imparse.js','carousels/lib/carousels.js','carousels/
 'lib/plotly-latest.min.js','lib/polynomium.js'];
 
 var neptune = new Neptune();
-neptune.addDocument('tutorial', __dirname + '/carousels_lecture.md', false, arr);
-neptune.writeHTML('tutorial', 'index.html');
+neptune.addDocument('carousels_lecture', __dirname + '/carousels_lecture.md', false, arr);
+neptune.writeHTML('carousels_lecture', 'index.html');
