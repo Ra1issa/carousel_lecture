@@ -1,3 +1,7 @@
 # carousel_lecture
 
-lo and behold!
+npm install
+
+node index.js
+
+open index.html

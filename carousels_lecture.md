@@ -2,9 +2,20 @@
 body{
   padding-right: 20%;
   padding-left: 20%;
-  font-weight: 100;
-  font-family: Calibri;
+  line-height: 1.6;
+  font-family: Verdana,Arial,Sans-serif;
   color:#173834;
+}
+h1{
+  color:#C48C17;
+  font-weight: light;
+  padding-bottom: 3%;
+}
+h2{
+  padding-top: 2%;
+  padding-bottom: 1%;
+  color:#C48C17;
+  font-weight: light;  
 }
 
 textarea{
@@ -30,7 +41,8 @@ textarea{
 <script src="/carousels/lib/setup.js"></script>
 ```
 
-# Carousels as an example of Static Cost Analysis
+# Example of Static Cost Analysis: Carousels
+
 
   These notes cover an example of defining and analyzing abstract metrics over [jiff](https://multiparty.org/jiff/docs/jsdoc/), a generic Javascript framework for MultiParty Computation (MPC).
 
@@ -38,40 +50,36 @@ textarea{
 
 ## Motivation
 
-  It is often critical in practice to automatically give upper bounds and estimates on resource usage of programs before reaching production in their lifeline.
-Several such scenarios include:
+  It is often critical in practice to automatically give upper bounds and estimates on resource usage of programs before reaching production. Several such scenarios include:
 
-    * Safety critical applications where we may need to catch vulnerabilities and side channels before deployment.
-    * Time critical applications where we need to finish tasks in a hard deadline.
-    * Memory critical applications where we may be limited by the total amount of memory our program can use.
-    * Cost critical applications where there may be a $ cost per resource usage.
-    * etc.
+  * Safety critical applications where we may need to catch vulnerabilities and side channels before deployment.
+  * Time critical applications where we need to finish tasks in a hard deadline.
+  * Memory critical applications where we may be limited by the total amount of memory our program can use.
+  * Cost critical applications where there may be a $ cost per resource usage.
+  * etc.
 
-  This problem is somewhat juxtaposed to the problem of giving asymptotic bounds of *whatever metric you pick* of algorithms because of the essentialness of giving representative constants:
-    While in an algorithms course you may be told that binary search in the worst case takes O(1) space complexity, we will actually care about the hidden constant that is slipped in the Big Oh notation. That will make the difference between saying that our program will use 10 GB or 10 MB in memory.
+This problem is somewhat juxtaposed to the problem of giving asymptotic bounds of *whatever metric you pick* for algorithms because of the importance of giving representative constants:
+  While in an algorithms course you may be told that binary search  takes in the worst case O(1) space complexity, we will actually care about the hidden constant that is slipped under the Big Oh notation. That will sometimes make the difference between saying that our program will use 10 GB or 10 MB in memory.
 
-  While it may generally be undecidable to perform resource estimates of generic programs, we may restrict our focus on subsets of languages for which the problem becomes solvable. Fortunately, these restrictions do not completely deter our programs expressiveness and may still form meaningful estimates for codes that programmers typically develop.
+While it may generally be undecidable to perform resource estimates of generic programs, we may restrict our focus on subsets of languages for which the problem becomes solvable. Fortunately, these restrictions do not completely deter our programs expressiveness and may still form meaningful estimates for codes that programmers typically develop.
 
 ## Problem Definition
 
-  In our specific example, we will be looking at the problem of estimating relevant metrics for MPC *(a subfield of cryptography that deals with distributive protocols for computing functions over secret data among multiple parties)*:
-
-    * The numbers of rounds of communication an MPC protocol takes
-    * The number of total messages sent between parties
+  In our specific example, we will be looking at the problem of estimating relevant metrics for MPC *(a subfield of cryptography that deals with distributive protocols for computing functions over secret data among multiple parties)*: The numbers of rounds of communication an MPC protocol takes.
 
   We need to do so by never actually running the program but rather statically analyzing it. In order to do so, we will be:
 
-    1. First defining a formal cost semantics for MPC primitives written in jiff.
-    These costs may later be updated depending on the enviornement in which we run our protocol *(browser, hardware, etc.)* .
-    2. Parsing the code we would like to analyze according to Javascripts grammar and transforming it into an AST (abstract syntax tree).
-    Thankfully for us, Babel will take care of tokenizing and anotating different sections of the code and will produce the necessary AST for us.
-    3. Traversing the AST and deriving our metric. We do so by exposing Babel's visitor patterns and cumulitavely constructing the metric accordingly.
-    4. Plotting our findings for visiualizing and interpreting the results.
+  1. Specifying the costs of MPC primitives written in jiff. These costs may later be updated depending on the
+  environment in which we run our protocol *(browser, hardware, etc.)* .
+  2. Parsing the code we would like to analyze according to Javascripts grammar and transforming it into an AST.
+  Thankfully for us, Babel will take care of tokenizing and annotating different sections of the code and will produce the necessary AST for us.
+  3. Traversing the AST and deriving our metric. We do so by exposing Babel's visitor patterns and cumulatively constructing the metric accordingly.
+  4. Plotting our findings for visualization and interpretation of results.
 
 
 ## Quick word on Babel
 
-Babel is a Javascript compiler that is used to convert new JS syntax and features (e.g. ES6+) into backward compatible JS supported by older enviornements. *In practice, you may often use javascript features that will not be supported by your clients browsers (e.g. Internet Explorer) and would need such a tool.* Babel's compilation process happens in 3 steps:
+Babel is a Javascript compiler that is used to convert new JS syntax and features (e.g. ES6+) into backward compatible JS supported by older environments. *In practice, you may often use JS features that will not be supported by your clients browsers (e.g. Internet Explorer) and would need such a tool.* Babel's compilation process happens in 3 steps:
 
  1. Generate an AST by parsing the JS code
  2. Transform the AST in order to transpile the code into older versions of JS
@@ -88,7 +96,7 @@ We will specifically be using Babel's plugins. These plugins are executed in the
 ## A Simple version of Carousels
 
 Code to Analyze:
-```neptune[inject=true,language=HTML]
+```neptune[title=Code,inject=true,language=HTML]
 <textarea id="code" width="100%">
 function bubblesort(x){
   var arr = [1,2,3,4];
@@ -100,13 +108,14 @@ function bubblesort(x){
 }
 </textarea>
 ```
+
 Cost specification of Online Rounds:
 ```neptune[inject=true,language=HTML]
 <textarea id="spec_cost">
 </textarea>
 ```
 
-```neptune[language=javascript]
+```neptune[title=Cost_Analysis,language=javascript]
 
 var spec = costs["onlineRounds"];
 var spec_cost = {};
@@ -159,7 +168,7 @@ Plot:
 ```
 
 
-# Looking at the Visitor Patterns
+## Looking at the Visitor Patterns
 
 Code to Analyze:
 ```neptune[inject=true,language=HTML]
@@ -184,7 +193,7 @@ What does the transformed Babel AST look like ?
 </textarea>
 ```
 
-```neptune[language=javascript]
+```neptune[title=Visitor_Patterns,language=javascript]
 var createMetric2 = function(spec) {
 
   var dict = {}; // acts as a stack
@@ -279,6 +288,10 @@ var results = compute_values([pol], 1);
 ```
 
 
-# Future Work
+## Future Work
 
-We are working on extending Carousels for other languages.
+We are working on extending Carousels to other languages, etc.
+
+## Contact
+
+If you have any questions feel free to ask me on Piazza or email me at ra1issa@bu.edu
