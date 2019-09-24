@@ -48,6 +48,8 @@ textarea{
 
 *Relevant libraries: [jiff](https://multiparty.org/jiff/docs/jsdoc/), [Babel](https://babeljs.io/), [polynomium](https://github.com/lapets/polynomium/), [imparse](https://github.com/lapets/imparse), [plotly](https://plot.ly/javascript/)*
 
+*You can also find the full working version of carousels [here](https://multiparty.org/carousels/) and the [source code here](https://github.com/multiparty/carousels)*.
+
 ## Motivation
 
   It is often critical in practice to automatically give upper bounds and estimates on resource usage of programs before reaching production. Several such scenarios include:
