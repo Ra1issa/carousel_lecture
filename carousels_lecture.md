@@ -100,7 +100,7 @@ We will specifically be using Babel's plugins. These plugins are executed in the
 Code to Analyze:
 ```neptune[title=Code,inject=true,language=HTML]
 <textarea id="code" width="100%">
-function bubblesort(x){
+function demo(x){
   var arr = [1,2,3,4];
 
   var arr_bool = arr.map((curr,i) => arr[i].lt(arr[i+1]));
@@ -147,7 +147,7 @@ document.getElementById("out").innerHTML = JSON.stringify(bbl_result, {maxLength
 // The output of Babel returns a string. We use the polynomium library to turn
 // this string into an actual polynomial.
 
-var pol = carousels.parsePoly(bbl_result["bubblesort"]);
+var pol = carousels.parsePoly(bbl_result["demo"]);
 console.log(pol);
 
 // Compute the polynomial over actual inputs (compute_values invoke polynomium's
@@ -156,7 +156,7 @@ console.log(pol);
 var results = compute_values([pol], 1);
 
 // Plot the results
-plot2d("onlineRounds", "bubblesort", results);
+plot2d("onlineRounds", "demo", results);
 
 ```
 Result of Analysis:
@@ -176,10 +176,16 @@ Code to Analyze:
 ```neptune[inject=true,language=HTML]
 <textarea id="code2" width="100%">
 function addition(){
+  var arr = [12,3,4];
+  dummy();
   var x = 1;
   var y = 2;
 
   return x+y;
+}
+
+function dummy(){
+  var arr = [1,2];
 }
 </textarea>
 ```
@@ -221,6 +227,34 @@ var createMetric2 = function(spec) {
             p.node.metric = metric;
             p.node.results = results;
             document.getElementById("ast").value = JSON.stringify(p.node, null,'\t');
+            console.log(dict);
+          }
+        },
+        ExpressionStatement: {
+          "exit": function (p) {
+            p.node.metric = p.node.expression.metric;
+          }
+        },
+        CallExpression: {
+          "exit": function (p) {
+            var op_name =  (p.node.callee.property != undefined)?  p.node.callee.property.name : p.node.callee.name ;
+            var parent_type = p.parent.type;
+            var scope = find_Scope(p);
+
+            if(op_name == "map" || op_name == "reduce"){
+              var arg = (p.node.arguments[0].type == "Identifier")? dict[scope+ ": "+p.node.arguments[0].name]: p.node.arguments[0];
+              var func = (p.node.arguments[1].type == "Identifier")?  dict[p.node.arguments[1].name]: p.node.arguments[1];
+              var arr_length = (op_name == "map") ? arg.elements.length : arg.elements.length - 1;
+
+              p.node.metric = polynomium.add(dot(polynomium.c(arr_length).toObject(), func), arg.metric).toObject();
+            }else if (op_name in spec) {
+              var arguments = p.node.arguments;
+              p.node.metric = arguments.reduce(plus, spec[op_name]);
+            }else {
+              throw Error("Node type CallExpression with operator " + op_name +
+                          " is not handled at line " + start.line + ", column " + start.column + ".");
+            }
+
           }
         },
         FunctionDeclaration: {
@@ -232,6 +266,17 @@ var createMetric2 = function(spec) {
         BlockStatement: {
           "exit": function (p) {
             p.node.metric = p.node.body.reduce(plus, zero);
+          }
+        },
+        ArrayExpression: { // TODO: fix issue with arrays defined in anonymous functions being added to primary function stack
+          "exit": function (p) {
+            var arr = p.node.elements;
+            var scope = p.scope.block.id.name;
+
+            p.node.metric = arr.reduce(plus);
+            if(p.container.id!= undefined){
+              dict[scope+ ": "+p.container.id.name]= p.node;
+            }
           }
         },
         Identifier: {
